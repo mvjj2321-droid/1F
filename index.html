@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Oneflix</title>
+<!-- Capacitor Core -->
+<script type="module">
+  import { Capacitor } from 'https://unpkg.com/@capacitor/core@6/dist/index.esm.js';
+  window.Capacitor = Capacitor;
+</script>
+<!-- Safe area insets for notch/status bar -->
+<style>
+  body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+  .nav { top: env(safe-area-inset-top) !important; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#000;--bg1:#0d0d0d;--bg2:#161616;--bg3:#1c1c1e;
+  --glass:rgba(255,255,255,0.07);--glass2:rgba(255,255,255,0.13);
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.18);
+  --white:#f5f5f7;--white2:rgba(245,245,247,0.68);--white3:rgba(245,245,247,0.36);
+  --gold:#c9a84c;--gold2:#e8c87a;--red:#ff453a;
+  --r:14px;--spring:cubic-bezier(0.34,1.56,0.64,1);--ease:cubic-bezier(0.4,0,0.2,1);
+  --blur:blur(32px) saturate(180%);
+}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--white);font-family:'Inter','SF Pro Display','Helvetica Neue',sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+
+/* ═══ INTRO ═══ */
+#intro{
+  position:fixed;inset:0;z-index:10000;background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;
+}
+#intro.exit{animation:introOut 0.9s cubic-bezier(0.76,0,0.24,1) both;pointer-events:none}
+@keyframes introOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
+
+.i-flare{position:absolute;border-radius:50%;pointer-events:none}
+.i-flare-1{width:700px;height:700px;top:50%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(201,168,76,0.1) 0%,transparent 65%);animation:fp 3.5s ease-in-out infinite}
+.i-flare-2{width:320px;height:320px;top:50%;left:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(201,168,76,0.2) 0%,transparent 60%);animation:fp 3.5s ease-in-out 0.5s infinite}
+@keyframes fp{0%,100%{opacity:0.3;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}}
+
+.i-scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.01) 2px,rgba(255,255,255,0.01) 4px)}
+
+.i-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.particle{position:absolute;border-radius:50%;background:var(--gold);opacity:0;animation:pf var(--dur,3s) ease var(--delay,0s) both}
+@keyframes pf{0%{opacity:0;transform:translate(0,0) scale(0)}20%{opacity:0.9}100%{opacity:0;transform:translate(var(--dx,20px),var(--dy,-80px)) scale(0.3)}}
+
+.i-logo{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:20px}
+.i-glow{position:absolute;inset:-30px;background:radial-gradient(ellipse 80% 50% at 50% 65%,rgba(201,168,76,0.25),transparent 70%);opacity:0;animation:glo 1s ease 1.1s both;pointer-events:none}
+@keyframes glo{to{opacity:1}}
+
+.i-brand{display:flex;align-items:baseline;font-family:'Instrument Serif',serif;font-size:clamp(56px,10vw,100px);font-style:italic;letter-spacing:-3px;line-height:1;perspective:600px}
+.i-letter{display:inline-block;opacity:0;color:var(--white);animation:lr 0.65s cubic-bezier(0.22,1,0.36,1) both;transform-origin:bottom center}
+.i-letter.g{color:var(--gold)}
+.i-letter:nth-child(1){animation-delay:0.15s}
+.i-letter:nth-child(2){animation-delay:0.27s}
+.i-letter:nth-child(3){animation-delay:0.39s}
+.i-letter:nth-child(4){animation-delay:0.51s}
+.i-letter:nth-child(5){animation-delay:0.63s}
+.i-letter:nth-child(6){animation-delay:0.75s}
+.i-letter:nth-child(7){animation-delay:0.87s}
+@keyframes lr{0%{opacity:0;transform:translateY(70px) rotateX(-40deg)}60%{opacity:1}100%{opacity:1;transform:translateY(0) rotateX(0)}}
+
+.i-line{width:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:ls 0.9s cubic-bezier(0.22,1,0.36,1) 1.25s both}
+@keyframes ls{0%{width:0;opacity:0}30%{opacity:1}100%{width:240px;opacity:0.55}}
+
+.i-tag{font-size:11px;font-weight:500;letter-spacing:4px;text-transform:uppercase;color:var(--white3);opacity:0;animation:fu 0.6s ease 1.7s both}
+.i-skip{position:absolute;bottom:40px;font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--white3);opacity:0;animation:fu 0.5s ease 2.3s both;padding:8px 20px;border-radius:20px;border:1px solid rgba(255,255,255,0.1)}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ NAV ═══ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;transition:background 0.4s,backdrop-filter 0.4s}
+.nav.scrolled{background:rgba(0,0,0,0.75);backdrop-filter:var(--blur);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Instrument Serif',serif;font-size:21px;font-style:italic;color:var(--white);letter-spacing:-0.5px;cursor:pointer;user-select:none}
+.nav-logo span{color:var(--gold)}
+.nav-tabs{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:2px}
+.nav-tab{padding:6px 18px;border-radius:8px;font-size:13px;font-weight:500;color:var(--white3);background:none;border:none;cursor:pointer;transition:color 0.2s;font-family:'Inter',sans-serif}
+.nav-tab:hover{color:var(--white2)}
+.nav-tab.active{color:var(--white);font-weight:600}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-badge{font-size:11px;font-weight:600;color:var(--white2);background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:4px 12px;display:none}
+.nav-badge.on{display:block}
+
+/* ═══ VIEWS ═══ */
+.view{display:none}
+.view.active{display:block}
+#streamView{display:none;flex-direction:column;height:100vh;padding-top:62px;background:#000}
+#streamView.active{display:flex}
+
+/* ═══ HERO BANNER ═══ */
+.hero{position:relative;height:calc(100vh - 180px);max-height:620px;min-height:460px;overflow:hidden;background:#000}
+
+.hero-bg{
+  position:absolute;inset:-10%;
+  background-size:cover;background-position:center 20%;
+  filter:blur(2px) brightness(0.3) saturate(1.4);
+  transform:scale(1);
+  transition:opacity 1.3s var(--ease);
+  opacity:0;
+}
+.hero-bg.on{opacity:1}
+
+.hero-poster{
+  position:absolute;right:0;top:0;bottom:0;width:52%;
+  background-size:cover;background-position:center top;
+  mask-image:linear-gradient(to left,rgba(0,0,0,0.95) 35%,rgba(0,0,0,0) 100%);
+  -webkit-mask-image:linear-gradient(to left,rgba(0,0,0,0.95) 35%,rgba(0,0,0,0) 100%);
+  transition:opacity 0.9s var(--ease);opacity:0;
+}
+.hero-poster.on{opacity:1}
+
+.hero-gl{position:absolute;inset:0;background:linear-gradient(105deg,rgba(0,0,0,0.98) 0%,rgba(0,0,0,0.75) 40%,rgba(0,0,0,0.1) 70%,transparent 85%);z-index:2;pointer-events:none}
+.hero-gb{position:absolute;bottom:0;left:0;right:0;height:260px;background:linear-gradient(to top,#000 0%,transparent 100%);z-index:2;pointer-events:none}
+
+.hero-content{
+  position:relative;z-index:5;height:100%;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 72px 96px;max-width:660px;
+}
+
+.h-eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;opacity:0}
+.h-title{font-family:'Instrument Serif',serif;font-size:clamp(38px,5.5vw,72px);font-weight:400;letter-spacing:-1.5px;line-height:1.05;color:var(--white);margin-bottom:14px;opacity:0}
+.h-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;opacity:0}
+.h-plot{font-size:14px;line-height:1.75;color:var(--white2);margin-bottom:30px;max-width:500px;opacity:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.h-btns{display:flex;gap:12px;opacity:0}
+
+.h-eyebrow.in{animation:hIn 0.5s ease both}
+.h-title.in{animation:hIn 0.5s ease 0.08s both}
+.h-meta.in{animation:hIn 0.5s ease 0.16s both}
+.h-plot.in{animation:hIn 0.5s ease 0.24s both}
+.h-btns.in{animation:hIn 0.5s ease 0.32s both}
+@keyframes hIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+.h-pill{padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.14);color:var(--white2)}
+.h-pill.r{color:var(--gold);background:rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.3)}
+
+.h-btn{display:flex;align-items:center;gap:8px;padding:12px 30px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.22s var(--spring);letter-spacing:-0.1px}
+.h-btn:hover{transform:scale(1.05)}
+.h-btn-p{background:var(--white);color:#000}
+.h-btn-p:hover{background:#ddd}
+.h-btn-s{background:rgba(255,255,255,0.14);color:var(--white);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.2)}
+.h-btn-s:hover{background:rgba(255,255,255,0.24)}
+
+.hero-nav{position:absolute;bottom:62px;right:72px;z-index:6;display:flex;align-items:center;gap:10px}
+.h-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.28);transition:all 0.35s;cursor:pointer}
+.h-dot.on{background:var(--white);width:24px;border-radius:3px}
+.h-arr{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(12px);color:var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+.h-arr:hover{background:rgba(255,255,255,0.2)}
+
+.hero-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,0.06);z-index:6}
+.hero-pf{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0}
+
+/* ═══ SEARCH BAR ═══ */
+.search-sec{padding:82px 72px 28px;border-bottom:1px solid var(--border)}
+.search-lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--white3);display:block;margin-bottom:14px}
+.search-wrap{position:relative;max-width:600px}
+.search-bar{width:100%;padding:16px 56px 16px 22px;border-radius:12px;background:var(--bg2);border:1.5px solid var(--border);font-family:'Inter',sans-serif;font-size:15px;color:var(--white);outline:none;transition:all 0.25s;caret-color:var(--gold)}
+.search-bar::placeholder{color:var(--white3)}
+.search-bar:focus{border-color:rgba(201,168,76,0.5);background:var(--bg3);box-shadow:0 0 0 3px rgba(201,168,76,0.07),0 8px 32px rgba(0,0,0,0.5)}
+.search-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:8px;background:var(--gold);border:none;color:#000;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+.search-btn:hover{background:var(--gold2);transform:translateY(-50%) scale(1.06)}
+.search-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.s-tag{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;color:var(--white3);background:var(--glass);border:1px solid var(--border);cursor:pointer;transition:all 0.18s}
+.s-tag:hover{background:var(--glass2);color:var(--white2);border-color:var(--border2)}
+.api-banner{max-width:600px;margin:16px 0 0;padding:14px 18px;border-radius:12px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;gap:12px;display:none}
+.api-banner.on{display:flex}
+.api-banner-txt{flex:1;font-size:13px;color:var(--white2);line-height:1.5}
+.api-banner-txt a{color:var(--gold);font-weight:600}
+.api-inp{flex:2;padding:8px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);font-family:'Inter',sans-serif;font-size:13px;color:var(--white);outline:none}
+.api-inp:focus{border-color:rgba(201,168,76,0.5)}
+.api-save{padding:8px 16px;border-radius:8px;background:var(--gold);color:#000;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.api-save:hover{background:var(--gold2)}
+
+/* ═══ SECTION ═══ */
+.section{padding:44px 72px}
+.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px}
+.sec-title{font-family:'Instrument Serif',serif;font-size:24px;font-weight:400;letter-spacing:-0.5px;color:var(--white)}
+.sec-title em{font-style:italic;color:var(--gold)}
+.sec-count{font-size:12px;color:var(--white3)}
+
+/* ═══ FILM GRID & CARDS ═══ */
+.film-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:18px}
+.film-card{border-radius:var(--r);overflow:hidden;background:var(--bg2);border:1px solid var(--border);transition:transform 0.4s var(--spring),box-shadow 0.35s;cursor:pointer;position:relative;aspect-ratio:2/3}
+.film-card:hover{transform:scale(1.07) translateY(-8px);box-shadow:0 32px 64px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.07);z-index:10}
+.fc-poster{position:absolute;inset:0;background-size:cover;background-position:center}
+.fc-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.fc-ph{width:100%;height:100%;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a1a,#0d0d0d);font-family:'Instrument Serif',serif;font-size:44px;font-style:italic;color:rgba(255,255,255,0.12)}
+.fc-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.95) 0%,rgba(0,0,0,0.55) 40%,transparent 70%);opacity:0;transition:opacity 0.3s;display:flex;flex-direction:column;justify-content:flex-end;padding:14px}
+.film-card:hover .fc-overlay{opacity:1}
+.fc-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}
+.fc-meta{font-size:11px;color:var(--white3);margin-bottom:10px}
+.fc-btns{display:flex;gap:6px}
+.fc-btn{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.18s;display:flex;align-items:center;gap:4px}
+.fc-btn-p{background:var(--white);color:#000}
+.fc-btn-p:hover{background:#e8e8e8}
+.fc-btn-s{background:rgba(255,255,255,0.12);color:var(--white);border:1px solid rgba(255,255,255,0.15)}
+.fc-btn-s:hover{background:rgba(255,255,255,0.22)}
+.fc-btn-s.sv{background:rgba(201,168,76,0.2);border-color:rgba(201,168,76,0.4);color:var(--gold)}
+.fc-badge{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;opacity:0;transition:opacity 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.film-card.inlib .fc-badge{opacity:1}
+.fc-remove{position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:50%;background:rgba(255,69,58,0.85);border:none;color:#fff;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;transition:all 0.2s;z-index:2}
+.film-card:hover .fc-remove{display:flex}
+.fc-remove:hover{background:var(--red);transform:scale(1.1)}
+
+/* ═══ LOADING / EMPTY ═══ */
+.loading{display:none;text-align:center;padding:60px 72px}
+.loading.on{display:block}
+.loader{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--gold);animation:spin 0.8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{display:none;text-align:center;padding:80px 72px}
+.empty.on{display:block}
+.empty-icon{font-family:'Instrument Serif',serif;font-size:56px;font-style:italic;color:var(--white3);display:block;margin-bottom:16px}
+.empty-title{font-size:20px;font-weight:500;color:var(--white2);margin-bottom:8px}
+.empty-sub{font-size:14px;color:var(--white3);line-height:1.7}
+
+/* ═══ SUGGESTIONS ═══ */
+.sug-sec{padding:0 72px 64px}
+.sug-lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--white3);display:block;margin-bottom:14px}
+.sug-row{display:flex;flex-wrap:wrap;gap:8px}
+.sug-pill{padding:7px 16px;border-radius:20px;background:var(--glass);border:1px solid var(--border);font-size:13px;font-weight:500;color:var(--white2);cursor:pointer;transition:all 0.2s}
+.sug-pill:hover{background:var(--glass2);color:var(--white);border-color:var(--border2);transform:translateY(-1px)}
+
+/* ═══ MODAL ═══ */
+.modal-bd{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0);backdrop-filter:blur(0px);pointer-events:none;transition:all 0.35s}
+.modal-bd.on{background:rgba(0,0,0,0.72);backdrop-filter:blur(28px) saturate(160%);pointer-events:all}
+.modal{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(110%);z-index:501;width:min(780px,98vw);background:#1a1a1a;border:1px solid var(--border2);border-bottom:none;border-radius:20px 20px 0 0;transition:transform 0.42s var(--spring);max-height:90vh;overflow-y:auto;pointer-events:none;box-shadow:0 -20px 80px rgba(0,0,0,0.7)}
+.modal.on{transform:translateX(-50%) translateY(0);pointer-events:all}
+.m-handle{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,0.14);margin:12px auto 0}
+.m-inner{display:flex}
+.m-poster-col{flex-shrink:0;width:200px;padding:20px 0 24px 24px}
+.m-poster{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.6);background:var(--bg2)}
+.m-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.m-poster-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:48px;font-style:italic;color:var(--white3)}
+.m-info{flex:1;padding:20px 24px 28px;min-width:0}
+.m-close{position:absolute;top:16px;right:20px;width:30px;height:30px;border-radius:50%;background:var(--glass);border:none;color:var(--white2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all 0.2s}
+.m-close:hover{background:var(--glass2);color:var(--white)}
+.m-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.m-title{font-family:'Instrument Serif',serif;font-size:26px;font-weight:400;letter-spacing:-0.6px;line-height:1.15;margin-bottom:10px;color:var(--white)}
+.m-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.m-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:var(--glass);color:var(--white2);border:1px solid var(--border)}
+.m-pill.r{background:rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.25);color:var(--gold);font-weight:700}
+.m-plot{font-size:14px;line-height:1.72;color:var(--white2);margin-bottom:18px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.m-dets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.m-dl{font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--white3);margin-bottom:2px}
+.m-dv{font-size:13px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-play-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);flex-wrap:wrap}
+.m-play-badge{background:var(--white);color:#000;font-size:11px;font-weight:800;padding:3px 8px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.m-play-link{flex:1;font-size:12px;color:var(--white3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.m-sm-btn{display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;flex-shrink:0;white-space:nowrap;border:none}
+.m-copy{background:var(--glass);color:var(--white2);border:1px solid var(--border)}
+.m-copy:hover{background:var(--glass2);color:var(--white)}
+.m-copy.done{background:rgba(52,199,89,0.18);border-color:rgba(52,199,89,0.35);color:#34c759}
+.m-watch{background:var(--red);color:#fff}
+.m-watch:hover{background:#ff6961;transform:scale(1.04)}
+.m-imdb-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;border-radius:12px;background:rgba(245,197,24,0.05);border:1px solid rgba(245,197,24,0.14)}
+.m-imdb-badge{background:#f5c518;color:#000;font-size:11px;font-weight:800;padding:3px 7px;border-radius:5px;flex-shrink:0}
+.m-imdb-link{flex:1;font-size:12px;color:var(--white3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-actions{display:flex;gap:10px}
+.m-lib-btn{flex:1;padding:13px 20px;border-radius:12px;background:var(--white);color:#000;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s var(--spring);display:flex;align-items:center;justify-content:center;gap:8px}
+.m-lib-btn:hover{transform:scale(1.02);background:#e8e8e8}
+.m-lib-btn.inlib{background:rgba(201,168,76,0.12);border:1.5px solid rgba(201,168,76,0.4);color:var(--gold)}
+.m-lib-btn.inlib:hover{background:rgba(201,168,76,0.2)}
+.m-imdb-btn{padding:13px 18px;border-radius:12px;background:var(--glass);color:var(--white2);border:1px solid var(--border);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:7px}
+.m-imdb-btn:hover{background:var(--glass2);color:var(--white)}
+
+/* ═══ LIBRARY ═══ */
+#libraryView{padding:90px 72px 80px}
+.lib-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:36px}
+.lib-title{font-family:'Instrument Serif',serif;font-size:38px;font-weight:400;letter-spacing:-1px;color:var(--white)}
+.lib-title em{font-style:italic;color:var(--gold)}
+.lib-sub{font-size:13px;color:var(--white3);margin-top:4px}
+.lib-empty{text-align:center;padding:100px 20px;display:none}
+.lib-empty.on{display:block}
+.le-icon{font-family:'Instrument Serif',serif;font-size:64px;font-style:italic;color:var(--white3);display:block;margin-bottom:16px}
+.le-txt{font-size:18px;font-weight:500;color:var(--white2);margin-bottom:8px}
+.le-sub{font-size:14px;color:var(--white3);line-height:1.6}
+
+/* ═══ STREAM ═══ */
+#streamView{overflow:hidden}
+.s-topbar{
+  display:flex;align-items:center;gap:12px;padding:10px 20px;
+  background:var(--bg1);flex-shrink:0;border-bottom:1px solid var(--border);flex-wrap:wrap;
+  transition:transform 0.4s cubic-bezier(0.4,0,0.2,1),opacity 0.4s;
+  transform:translateY(0);opacity:1;
+}
+.s-topbar-title{font-size:14px;font-weight:600;color:var(--white2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.s-sel{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg2);font-family:'Inter',sans-serif;font-size:12px;color:var(--white);outline:none;cursor:pointer;max-width:200px}
+.s-sel option{background:#1c1c1e}
+.s-go{display:flex;align-items:center;gap:6px;padding:7px 18px;border-radius:8px;background:var(--red);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s}
+.s-go:hover{background:#ff6961;transform:scale(1.04)}
+.s-adb{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.25);font-size:10px;font-weight:700;color:#34c759;letter-spacing:0.5px}
+.s-adot{width:5px;height:5px;border-radius:50%;background:#34c759;animation:adp 2s ease-in-out infinite}
+@keyframes adp{0%,100%{opacity:1}50%{opacity:0.35}}
+.s-shell{flex:1;position:relative;background:#000;min-height:0}
+.s-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px}
+.s-empty-txt{font-size:18px;font-weight:600;color:rgba(255,255,255,0.35)}
+.s-empty-sub{font-size:13px;color:rgba(255,255,255,0.18);max-width:300px;line-height:1.65}
+.s-iframe-wrap{position:absolute;inset:0;display:none}
+.s-iframe-wrap.on{display:block}
+.s-iframe{width:100%;height:100%;border:none;background:#000}
+.s-spinner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;display:none}
+.s-spinner.on{display:block}
+.s-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,0.1);border-top-color:#fff;animation:spin 0.9s linear infinite}
+.s-fs{position:absolute;bottom:16px;right:16px;z-index:20;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.1);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.15);color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+.s-iframe-wrap.on .s-fs{display:flex}
+.s-fs:hover{background:rgba(255,255,255,0.2);transform:scale(1.08)}
+.s-rtoa{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(255,69,58,0.9);backdrop-filter:blur(12px);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:600;z-index:20;pointer-events:none;opacity:0;transition:opacity 0.3s;white-space:nowrap}
+.s-rtoa.on{opacity:1}
+
+/* ═══ CINEMA MODE (cursor + controls auto-hide) ═══ */
+/* Overlay covers the iframe so cursor events reach parent */
+#sCursorOverlay{
+  display:none;position:absolute;inset:0;z-index:30;
+  cursor:none;background:transparent;
+}
+/* When cinema mode is active */
+#streamView.cinema .s-topbar{
+  transform:translateY(-110%);opacity:0;pointer-events:none;
+}
+#streamView.cinema,
+#streamView.cinema *{cursor:none !important;}
+
+/* ═══ REVIEWS ═══ */
+#reviewsView{padding:90px 72px 80px}
+.rv-hdr{margin-bottom:8px}
+.rv-title{font-family:'Instrument Serif',serif;font-size:38px;font-weight:400;letter-spacing:-1px;color:var(--white)}
+.rv-title em{font-style:italic;color:var(--gold)}
+.rv-sub{font-size:13px;color:var(--white3);margin-bottom:20px}
+.rv-stats{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:18px 24px;border-radius:16px;background:var(--bg2);border:1px solid var(--border);margin-bottom:28px;display:none}
+.rv-stats.on{display:flex}
+.rvs-num{font-family:'Instrument Serif',serif;font-size:28px;font-style:italic;color:var(--white);line-height:1}
+.rvs-lbl{font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--white3);margin-top:2px}
+.rvs-div{width:1px;height:36px;background:var(--border);flex-shrink:0}
+.rv-sort{display:flex;align-items:center;gap:8px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);display:none}
+.rv-sort.on{display:flex}
+.rv-sort-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white3)}
+.rv-sort-btn{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;color:var(--white3);background:none;border:1px solid var(--border);cursor:pointer;transition:all 0.18s;font-family:'Inter',sans-serif}
+.rv-sort-btn:hover{color:var(--white2);border-color:var(--border2)}
+.rv-sort-btn.on{background:var(--white);color:#000;border-color:var(--white)}
+.rv-empty{text-align:center;padding:80px 20px;display:none}
+.rv-empty.on{display:block}
+.rv-list{display:flex;flex-direction:column}
+.rv-card{display:flex;gap:0;border-bottom:1px solid var(--border);padding:22px 0}
+.rv-card:first-child{border-top:1px solid var(--border)}
+.rv-rank{width:48px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:center;padding-top:2px;font-family:'Instrument Serif',serif;font-size:22px;font-style:italic;color:var(--white3)}
+.rv-rank.top{color:var(--gold)}
+.rv-pw{flex-shrink:0;width:72px;margin-right:20px}
+.rv-post{width:72px;height:106px;border-radius:8px;overflow:hidden;background:var(--bg2);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.rv-post img{width:100%;height:100%;object-fit:cover;display:block}
+.rv-post-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:24px;font-style:italic;color:var(--white3)}
+.rv-inf{flex:1;min-width:0}
+.rv-ft{font-family:'Instrument Serif',serif;font-size:20px;font-weight:400;letter-spacing:-0.4px;color:var(--white);margin-bottom:2px}
+.rv-fm{font-size:12px;color:var(--white3);margin-bottom:10px}
+.rv-stars{display:flex;gap:3px;margin-bottom:10px}
+.star-d{font-size:18px;line-height:1;color:rgba(255,255,255,0.12);transition:color 0.15s}
+.star-d.on{color:var(--gold)}
+.rv-text{font-size:14px;line-height:1.7;color:var(--white2);font-style:italic;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.rv-text.nr{color:var(--white3);font-style:normal;font-size:13px}
+.rv-date{font-size:11px;color:var(--white3);font-weight:500}
+.rv-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.rv-btn{display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.18s}
+.rv-write{background:var(--white);color:#000}
+.rv-write:hover{background:#e0e0e0;transform:scale(1.04)}
+.rv-watch{background:rgba(255,69,58,0.1);color:var(--red);border:1.5px solid rgba(255,69,58,0.2)}
+.rv-watch:hover{background:rgba(255,69,58,0.18)}
+.rv-rem{background:rgba(255,69,58,0.06);color:var(--red);border:1.5px solid rgba(255,69,58,0.12);margin-left:auto}
+.rv-rem:hover{background:rgba(255,69,58,0.14)}
+.rv-form{margin-top:14px;display:none;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.rv-form.on{display:block}
+.rv-flbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white3);margin-bottom:10px;display:block}
+.si-row{display:flex;gap:4px;margin-bottom:14px}
+.si{font-size:28px;cursor:pointer;color:rgba(255,255,255,0.12);transition:color 0.12s,transform 0.12s;user-select:none;line-height:1}
+.si:hover,.si.hov,.si.sel{color:var(--gold)}
+.si:hover{transform:scale(1.15)}
+.rv-ta{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg3);font-family:'Inter',sans-serif;font-size:14px;color:var(--white);outline:none;resize:vertical;min-height:80px;line-height:1.6;margin-bottom:12px;transition:border-color 0.2s}
+.rv-ta::placeholder{color:var(--white3);font-style:italic}
+.rv-ta:focus{border-color:rgba(201,168,76,0.4)}
+.rv-fa{display:flex;gap:8px}
+.rv-save{padding:9px 20px;border-radius:8px;background:var(--white);color:#000;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.rv-save:hover{background:#e0e0e0}
+.rv-cancel{padding:9px 16px;border-radius:8px;background:none;color:var(--white3);border:1px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif}
+.rv-cancel:hover{border-color:var(--border2);color:var(--white2)}
+
+/* ═══ TOAST ═══ */
+#toast-cont{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:rgba(28,28,30,0.96);backdrop-filter:blur(20px);color:var(--white);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:500;animation:tIn 0.35s var(--spring) both;white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,0.6);border:1px solid var(--border2)}
+.toast.gold{background:rgba(201,168,76,0.92);color:#000;border-color:transparent}
+.toast.red{background:rgba(255,69,58,0.92);color:#fff;border-color:transparent}
+@keyframes tIn{from{opacity:0;transform:translateY(18px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes tOut{to{opacity:0;transform:translateY(8px) scale(0.9)}}
+
+/* ═══ MOBILE ═══ */
+@media(max-width:700px){
+  .nav{padding:0 20px}.nav-tabs{display:none}
+  .hero-content{padding:0 24px 56px}.h-title{font-size:34px}
+  .search-sec{padding:80px 20px 20px}
+  .section,.sug-sec{padding-left:20px;padding-right:20px}
+  #libraryView,#reviewsView{padding-left:20px;padding-right:20px}
+  .film-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .m-inner{flex-direction:column}.m-poster-col{width:100%;padding:20px 20px 0}.m-poster{width:130px;margin:0 auto}
+  .m-info{padding:16px 20px 24px}.m-dets{grid-template-columns:1fr}
+  .hero-nav{right:24px;bottom:44px}
+}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro" onclick="skipIntro()">
+  <div class="i-flare i-flare-1"></div>
+  <div class="i-flare i-flare-2"></div>
+  <div class="i-scan"></div>
+  <div class="i-particles" id="iParticles"></div>
+  <div class="i-logo">
+    <div style="position:relative">
+      <div class="i-glow"></div>
+      <div class="i-brand">
+        <span class="i-letter">O</span><span class="i-letter">n</span><span class="i-letter">e</span><span class="i-letter g">f</span><span class="i-letter g">l</span><span class="i-letter g">i</span><span class="i-letter g">x</span>
+      </div>
+    </div>
+    <div class="i-line"></div>
+    <div class="i-tag">Your Personal Film Universe</div>
+  </div>
+  <div class="i-skip">Click anywhere to begin</div>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <div class="nav-logo" onclick="setView('search')">One<span>flix</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-search" onclick="setView('search')">Discover</button>
+    <button class="nav-tab" id="tab-library" onclick="setView('library')">Library</button>
+    <button class="nav-tab" id="tab-stream" onclick="setView('stream')">Stream</button>
+    <button class="nav-tab" id="tab-reviews" onclick="setView('reviews')">Reviews</button>
+  </div>
+  <div class="nav-right"><div class="nav-badge" id="navBadge"></div></div>
+</nav>
+
+<!-- SEARCH VIEW -->
+<div id="searchView" class="view active">
+  <!-- SEARCH (above hero) -->
+  <div class="search-sec">
+    <span class="search-lbl">Search Films</span>
+    <div class="search-wrap">
+      <input type="text" class="search-bar" id="searchInput" placeholder="Search the IMDB database…" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')doSearch()">
+      <button class="search-btn" onclick="doSearch()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></button>
+    </div>
+    <div class="search-tags">
+      <span class="s-tag" onclick="quickSearch('Interstellar')">Interstellar</span>
+      <span class="s-tag" onclick="quickSearch('The Godfather')">The Godfather</span>
+      <span class="s-tag" onclick="quickSearch('Inception')">Inception</span>
+      <span class="s-tag" onclick="quickSearch('Parasite')">Parasite</span>
+      <span class="s-tag" onclick="quickSearch('Oppenheimer')">Oppenheimer</span>
+      <span class="s-tag" onclick="quickSearch('Dune')">Dune</span>
+    </div>
+    <div class="api-banner" id="apiBanner">
+      <div class="api-banner-txt">Limit reached. Get a free key at <a href="https://www.omdbapi.com/apikey.aspx" target="_blank">omdbapi.com</a></div>
+      <input type="text" class="api-inp" id="apiInp" placeholder="Paste your OMDb key…">
+      <button class="api-save" onclick="saveApiKey()">Save</button>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero" id="heroSection">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-poster" id="heroPoster"></div>
+    <div class="hero-gl"></div><div class="hero-gb"></div>
+    <div class="hero-content">
+      <div class="h-eyebrow" id="hEyebrow">Featured</div>
+      <div class="h-title" id="hTitle">—</div>
+      <div class="h-meta" id="hMeta"></div>
+      <div class="h-plot" id="hPlot"></div>
+      <div class="h-btns">
+        <button class="h-btn h-btn-p" onclick="heroWatch()"><svg width="12" height="12" viewBox="0 0 10 11" fill="currentColor"><polygon points="0,0 10,5.5 0,11"/></svg>Watch Now</button>
+        <button class="h-btn h-btn-s" onclick="heroDetails()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Details</button>
+      </div>
+    </div>
+    <div class="hero-nav">
+      <button class="h-arr" onclick="heroStep(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg></button>
+      <div id="hDots" style="display:flex;gap:6px"></div>
+      <button class="h-arr" onclick="heroStep(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg></button>
+    </div>
+    <div class="hero-progress"><div class="hero-pf" id="heroPF"></div></div>
+  </div>
+
+  <div class="loading" id="loadingState"><div class="loader"></div><p style="font-size:14px;color:var(--white3)">Searching…</p></div>
+
+  <div id="resultsArea" style="display:none">
+    <div class="section">
+      <div class="sec-hdr"><div class="sec-title" id="resTitle">Results</div><div class="sec-count" id="resCount"></div></div>
+      <div class="film-grid" id="resGrid"></div>
+    </div>
+  </div>
+
+  <div class="empty" id="emptyState">
+    <span class="empty-icon">∅</span>
+    <div class="empty-title">No results found</div>
+    <div class="empty-sub">Try a different title.</div>
+  </div>
+
+  <div class="sug-sec" id="homeSugs">
+    <span class="sug-lbl">Popular right now</span>
+    <div class="sug-row">
+      <span class="sug-pill" onclick="quickSearch('The Dark Knight')">The Dark Knight</span>
+      <span class="sug-pill" onclick="quickSearch('Spirited Away')">Spirited Away</span>
+      <span class="sug-pill" onclick="quickSearch('Pulp Fiction')">Pulp Fiction</span>
+      <span class="sug-pill" onclick="quickSearch('The Shawshank Redemption')">The Shawshank Redemption</span>
+      <span class="sug-pill" onclick="quickSearch('Fight Club')">Fight Club</span>
+      <span class="sug-pill" onclick="quickSearch('Forrest Gump')">Forrest Gump</span>
+      <span class="sug-pill" onclick="quickSearch('The Matrix')">The Matrix</span>
+      <span class="sug-pill" onclick="quickSearch('Goodfellas')">Goodfellas</span>
+      <span class="sug-pill" onclick="quickSearch('Oppenheimer')">Oppenheimer</span>
+      <span class="sug-pill" onclick="quickSearch('Everything Everywhere All at Once')">Everything Everywhere</span>
+      <span class="sug-pill" onclick="quickSearch('RRR')">RRR</span>
+      <span class="sug-pill" onclick="quickSearch('12 Angry Men')">12 Angry Men</span>
+    </div>
+  </div>
+</div>
+
+<!-- LIBRARY VIEW -->
+<div id="libraryView" class="view">
+  <div class="lib-hdr">
+    <div><div class="lib-title">My <em>Library</em></div><div class="lib-sub" id="libSub">Your personal collection</div></div>
+  </div>
+  <div class="lib-empty" id="libEmpty"><span class="le-icon">◎</span><div class="le-txt">Your library is empty</div><div class="le-sub">Discover films and save them here.</div></div>
+  <div class="film-grid" id="libGrid"></div>
+</div>
+
+<!-- STREAM VIEW -->
+<div id="streamView">
+  <div class="s-topbar">
+    <div class="s-topbar-title" id="sTitle">Select a film</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <select class="s-sel" id="sSel"><option value="">— Library —</option></select>
+      <button class="s-go" onclick="loadStream()"><svg width="10" height="11" viewBox="0 0 10 11" fill="currentColor"><polygon points="0,0 10,5.5 0,11"/></svg>Stream</button>
+    </div>
+    <div class="s-adb"><div class="s-adot"></div>AD BLOCK ON</div>
+  </div>
+  <div class="s-shell">
+    <div class="s-empty" id="sEmpty"><svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16" fill="rgba(255,255,255,0.08)" stroke="none"/></svg><div class="s-empty-txt">Ready to stream</div><div class="s-empty-sub">Select a film and hit Stream.</div></div>
+    <div class="s-iframe-wrap" id="sWrap">
+      <div class="s-rtoa" id="sRtoa">🛡 Redirect blocked</div>
+      <div class="s-spinner" id="sSpin"><div class="s-ring"></div></div>
+      <iframe id="sIframe" class="s-iframe" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock" referrerpolicy="no-referrer" loading="lazy"></iframe>
+      <div id="sCursorOverlay"></div>
+      <button class="s-fs" onclick="toggleFS()" title="Fullscreen"><svg id="fsIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,3 21,3 21,9"/><polyline points="9,21 3,21 3,15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEWS VIEW -->
+<div id="reviewsView" class="view">
+  <div class="rv-hdr"><div class="rv-title">Your <em>Reviews</em></div></div>
+  <div class="rv-sub" id="rvSub">Rate and rank your collection</div>
+  <div class="rv-stats" id="rvStats">
+    <div><div class="rvs-num" id="stFilms">0</div><div class="rvs-lbl">Films</div></div>
+    <div class="rvs-div"></div>
+    <div><div class="rvs-num" id="stRev">0</div><div class="rvs-lbl">Reviewed</div></div>
+    <div class="rvs-div"></div>
+    <div><div style="display:flex;align-items:center;gap:8px"><div class="rvs-num" id="stAvg">—</div><div id="stAvgS" style="display:flex;gap:3px"></div></div><div class="rvs-lbl">Avg Rating</div></div>
+  </div>
+  <div class="rv-sort" id="rvSort">
+    <span class="rv-sort-lbl">Sort</span>
+    <button class="rv-sort-btn on" id="sort-rating" onclick="setSortMode('rating')">★ Rating</button>
+    <button class="rv-sort-btn" id="sort-alpha" onclick="setSortMode('alpha')">A–Z</button>
+    <button class="rv-sort-btn" id="sort-added" onclick="setSortMode('added')">Date Added</button>
+  </div>
+  <div class="rv-empty" id="rvEmpty"><span class="empty-icon" style="font-size:56px">★</span><div class="empty-title">No films yet</div><div class="empty-sub">Add films from Discover to rate them.</div></div>
+  <div class="rv-list" id="rvList"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bd" id="mBd" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <div class="m-handle"></div>
+  <button class="m-close" onclick="closeModal()">✕</button>
+  <div class="m-inner">
+    <div class="m-poster-col"><div class="m-poster" id="mPoster"><div class="m-poster-ph">◎</div></div></div>
+    <div class="m-info">
+      <div class="m-eyebrow" id="mEyebrow">Film</div>
+      <div class="m-title" id="mTitle"></div>
+      <div class="m-meta" id="mMeta"></div>
+      <p class="m-plot" id="mPlot"></p>
+      <div class="m-dets" id="mDets"></div>
+      <div class="m-play-row" id="mPlayRow" style="display:none">
+        <span class="m-play-badge"><svg width="9" height="10" viewBox="0 0 9 10" fill="currentColor"><polygon points="0,0 9,5 0,10"/></svg>Play</span>
+        <span class="m-play-link" id="mPlayLink"></span>
+        <button class="m-sm-btn m-copy" id="mPlayCopy" onclick="copyPlay()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+        <button class="m-sm-btn m-watch" onclick="watchFromModal()"><svg width="10" height="10" viewBox="0 0 10 11" fill="currentColor"><polygon points="0,0 10,5.5 0,11"/></svg>Watch Now</button>
+      </div>
+      <div class="m-imdb-row" id="mImdbRow" style="display:none">
+        <span class="m-imdb-badge">IMDb</span>
+        <span class="m-imdb-link" id="mImdbLink"></span>
+        <button class="m-sm-btn m-copy" id="mImdbCopy" onclick="copyImdb()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+      </div>
+      <div class="m-actions">
+        <button class="m-lib-btn" id="mLibBtn" onclick="toggleLibModal()"><svg id="mLibIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span id="mLibTxt">Add to Library</span></button>
+        <button class="m-imdb-btn" onclick="openImdb()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>IMDb</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-cont"></div>
+
+<script>
+/* STATE */
+const KEY=()=>localStorage.getItem('oneflix_key')||'trilogy';
+let library=JSON.parse(localStorage.getItem('oneflix_lib')||'[]');
+let reviews=JSON.parse(localStorage.getItem('oneflix_reviews')||'{}');
+let currentFilm=null,currentView='search',sortMode='rating';
+
+const FEATURED=['tt0468569','tt0816692','tt1375666','tt0111161','tt6751668','tt0110912','tt0137523','tt0167260'];
+let featFilms=[],heroIdx=0,heroTimer=null;
+const HERO_INT=7000;
+
+/* INTRO PARTICLES */
+(()=>{
+  const c=document.getElementById('iParticles');
+  for(let i=0;i<28;i++){
+    const p=document.createElement('div');p.className='particle';
+    p.style.cssText=`left:${15+Math.random()*70}%;top:${25+Math.random()*50}%;--dur:${2+Math.random()*3}s;--delay:${0.9+Math.random()*2}s;--dx:${(Math.random()-.5)*130}px;--dy:${-40-Math.random()*120}px;width:${1+Math.random()*3}px;height:${1+Math.random()*3}px`;
+    c.appendChild(p);
+  }
+})();
+
+function skipIntro(){
+  const el=document.getElementById('intro');
+  el.classList.add('exit');
+  setTimeout(()=>{el.style.display='none'},950);
+}
+setTimeout(skipIntro,4400);
+
+/* AD BLOCKER */
+(()=>{
+  const AD=['doubleclick.net','googleadservices.com','googlesyndication.com','google-analytics.com','adnxs.com','adsrvr.org','amazon-adsystem.com','outbrain.com','taboola.com','criteo.com','popads.net','propellerads.com','exoclick.com','adsterra.com'];
+  const bad=u=>{try{const h=new URL(u).hostname.toLowerCase().replace(/^www\./,'');return AD.some(d=>h===d||h.endsWith('.'+d))}catch{return false}};
+  const _f=window.fetch;window.fetch=function(i,o){const u=typeof i==='string'?i:(i?.url||'');if(bad(u))return Promise.reject(new TypeError('Blocked'));return _f.apply(this,arguments)};
+  const _o=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){this._b=bad(u||'');if(!this._b)return _o.apply(this,arguments)};
+  const _s=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.send=function(){if(this._b)return;return _s.apply(this,arguments)};
+  const _w=window.open;window.open=function(u,...r){if(u&&bad(u))return null;return _w.apply(this,[u,...r])};
+})();
+
+/* NAV SCROLL */
+window.addEventListener('scroll',()=>{document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>20)},{passive:true});
+
+/* VIEW SWITCHING */
+function setView(v){
+  // Exit cinema mode when leaving stream
+  if(v !== 'stream'){
+    const el = document.getElementById('streamView');
+    const o  = document.getElementById('sCursorOverlay');
+    if(el) el.classList.remove('cinema');
+    if(o){ o.style.display='none'; o.style.pointerEvents='none'; }
+  }
+  currentView=v;
+  ['search','library','reviews'].forEach(id=>{
+    const el=document.getElementById(id+'View');
+    if(el)el.classList.toggle('active',id===v);
+  });
+  const sv=document.getElementById('streamView');
+  if(v==='stream'){sv.style.display='flex';sv.classList.add('active')}
+  else{sv.style.display='none';sv.classList.remove('active')}
+  ['search','library','stream','reviews'].forEach(id=>{
+    const t=document.getElementById('tab-'+id);
+    if(t)t.classList.toggle('active',id===v);
+  });
+  if(v==='library')renderLib();
+  if(v==='stream')initStream();
+  if(v==='reviews')renderReviews();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* SEARCH */
+function quickSearch(t){document.getElementById('searchInput').value=t;doSearch()}
+async function doSearch(){
+  const q=document.getElementById('searchInput').value.trim();if(!q)return;
+  document.getElementById('homeSugs').style.display='none';
+  document.getElementById('emptyState').classList.remove('on');
+  document.getElementById('resultsArea').style.display='none';
+  document.getElementById('apiBanner').classList.remove('on');
+  document.getElementById('loadingState').classList.add('on');
+  try{
+    const d=await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(q)}&apikey=${KEY()}`).then(r=>r.json());
+    document.getElementById('loadingState').classList.remove('on');
+    if(d.Response==='False'){
+      if((d.Error||'').match(/limit|invalid api key/i)){document.getElementById('apiBanner').classList.add('on');return}
+      document.getElementById('emptyState').classList.add('on');return;
+    }
+    renderResults(d.Search||[],q);
+  }catch(e){document.getElementById('loadingState').classList.remove('on');document.getElementById('emptyState').classList.add('on');toast('Network error','red')}
+}
+function renderResults(films,q){
+  document.getElementById('resTitle').innerHTML=`Results for <em>"${esc(q)}"</em>`;
+  document.getElementById('resCount').textContent=`${films.length} title${films.length!==1?'s':''}`;
+  document.getElementById('resGrid').innerHTML=films.map(f=>cardHTML(f,false)).join('');
+  document.getElementById('resultsArea').style.display='block';
+}
+
+/* CARD HTML */
+function cardHTML(f,isLib){
+  const inL=inLib(f.imdbID),safe=encodeURIComponent(JSON.stringify(f));
+  const hasPoster=f.Poster&&f.Poster!=='N/A';
+  const posterHTML=hasPoster?`<img src="${esc(f.Poster)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="fc-ph">${esc((f.Title||'?')[0])}</div>`;
+  const rm=isLib?`<button class="fc-remove" onclick="event.stopPropagation();removeLib('${f.imdbID}')">✕</button>`:'';
+  return `<div class="film-card ${inL?'inlib':''}" onclick="openDetail('${f.imdbID}',decodeURIComponent('${safe}'))">
+    ${rm}<div class="fc-poster">${posterHTML}</div>
+    <div class="fc-badge">✓</div>
+    <div class="fc-overlay">
+      <div class="fc-title">${esc(f.Title||'')}</div>
+      <div class="fc-meta">${esc(f.Year||'')}${f.Type?' · '+cap(f.Type):''}</div>
+      <div class="fc-btns">
+        <button class="fc-btn fc-btn-p" onclick="event.stopPropagation();openDetail('${f.imdbID}',decodeURIComponent('${safe}'))">Details</button>
+        <button class="fc-btn fc-btn-s ${inL?'sv':''}" onclick="event.stopPropagation();quickToggle('${f.imdbID}',decodeURIComponent('${safe}'),this)">${inL?'✓ Saved':'+ Save'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* MODAL */
+async function openDetail(id,raw){
+  let basic={};try{basic=JSON.parse(raw)}catch{}
+  currentFilm={...basic,imdbID:id};
+  fillModal(currentFilm);
+  document.getElementById('mBd').classList.add('on');
+  document.getElementById('modal').classList.add('on');
+  document.body.style.overflow='hidden';
+  try{
+    const full=await fetch(`https://www.omdbapi.com/?i=${id}&plot=full&apikey=${KEY()}`).then(r=>r.json());
+    if(full.Response==='True'){currentFilm=full;fillModal(full)}
+  }catch{}
+}
+function fillModal(f){
+  document.getElementById('mEyebrow').textContent=f.Type==='series'?'TV Series':f.Type==='episode'?'Episode':'Film';
+  document.getElementById('mTitle').textContent=f.Title||'';
+  const p=document.getElementById('mPoster');
+  if(f.Poster&&f.Poster!=='N/A'){p.innerHTML=`<img src="${esc(f.Poster)}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:12px">`}
+  else{p.innerHTML=`<div class="m-poster-ph">${esc((f.Title||'?')[0])}</div>`}
+  const pills=[];
+  if(f.Year)pills.push({t:f.Year,c:''});
+  if(f.Rated&&f.Rated!=='N/A')pills.push({t:f.Rated,c:''});
+  if(f.Runtime&&f.Runtime!=='N/A')pills.push({t:f.Runtime,c:''});
+  if(f.Genre&&f.Genre!=='N/A')f.Genre.split(',').slice(0,2).forEach(g=>pills.push({t:g.trim(),c:''}));
+  if(f.imdbRating&&f.imdbRating!=='N/A')pills.push({t:'★ '+f.imdbRating,c:'r'});
+  document.getElementById('mMeta').innerHTML=pills.map(p=>`<span class="m-pill ${p.c}">${esc(p.t)}</span>`).join('');
+  const pl=document.getElementById('mPlot');
+  pl.textContent=(f.Plot&&f.Plot!=='N/A')?f.Plot:'';pl.style.display=(f.Plot&&f.Plot!=='N/A')?'block':'none';
+  const dets=[];
+  if(f.Director&&f.Director!=='N/A')dets.push({l:'Director',v:f.Director});
+  if(f.Actors&&f.Actors!=='N/A')dets.push({l:'Cast',v:f.Actors});
+  if(f.Language&&f.Language!=='N/A')dets.push({l:'Language',v:f.Language});
+  if(f.Country&&f.Country!=='N/A')dets.push({l:'Country',v:f.Country});
+  if(f.Awards&&f.Awards!=='N/A')dets.push({l:'Awards',v:f.Awards});
+  if(f.BoxOffice&&f.BoxOffice!=='N/A')dets.push({l:'Box Office',v:f.BoxOffice});
+  document.getElementById('mDets').innerHTML=dets.map(d=>`<div><div class="m-dl">${esc(d.l)}</div><div class="m-dv">${esc(d.v)}</div></div>`).join('');
+  const pr=document.getElementById('mPlayRow'),pl2=document.getElementById('mPlayLink');
+  if(f.imdbID){pl2.textContent=`https://www.playimdb.com/title/${f.imdbID}/`;pr.style.display='flex'}else pr.style.display='none';
+  const ir=document.getElementById('mImdbRow'),il=document.getElementById('mImdbLink');
+  if(f.imdbID){il.textContent=`https://www.imdb.com/title/${f.imdbID}/`;ir.style.display='flex'}else ir.style.display='none';
+  updateLibBtn();
+}
+function updateLibBtn(){
+  if(!currentFilm)return;
+  const il=inLib(currentFilm.imdbID),btn=document.getElementById('mLibBtn');
+  document.getElementById('mLibIcon').innerHTML=il?'<polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2.5" fill="none"/>':'<line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2.5"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2.5"/>';
+  document.getElementById('mLibTxt').textContent=il?'In Library':'Add to Library';
+  btn.classList.toggle('inlib',il);
+}
+function closeModal(){
+  document.getElementById('mBd').classList.remove('on');
+  document.getElementById('modal').classList.remove('on');
+  document.body.style.overflow='';currentFilm=null;
+}
+function watchFromModal(){
+  if(!currentFilm?.imdbID)return;
+  const id=currentFilm.imdbID,title=currentFilm.Title||'Film';
+  if(!inLib(id))addLib(currentFilm);
+  closeModal();setView('stream');
+  setTimeout(()=>{initStream();const s=document.getElementById('sSel');if(s)s.value=id;streamBy(id,title)},80);
+}
+function copyPlay(){
+  if(!currentFilm?.imdbID)return;
+  const url=`https://www.playimdb.com/title/${currentFilm.imdbID}/`;
+  navigator.clipboard.writeText(url).then(()=>{
+    const b=document.getElementById('mPlayCopy');b.classList.add('done');b.textContent='✓ Copied!';
+    setTimeout(()=>{b.classList.remove('done');b.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy'},2200);
+    toast('Play link copied ✓','');
+  }).catch(()=>prompt('Copy:',url));
+}
+function copyImdb(){
+  if(!currentFilm?.imdbID)return;
+  const url=`https://www.imdb.com/title/${currentFilm.imdbID}/`;
+  navigator.clipboard.writeText(url).then(()=>{
+    const b=document.getElementById('mImdbCopy');b.classList.add('done');b.textContent='✓ Copied!';
+    setTimeout(()=>{b.classList.remove('done');b.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy'},2200);
+    toast('IMDb link copied ✓','gold');
+  }).catch(()=>prompt('Copy:',url));
+}
+function openImdb(){if(!currentFilm?.imdbID)return;window.open(`https://www.imdb.com/title/${currentFilm.imdbID}/`,'_blank')}
+
+/* LIBRARY */
+function inLib(id){return library.some(f=>f.imdbID===id)}
+function addLib(film){
+  if(!film||!film.imdbID||inLib(film.imdbID))return;
+  library.unshift({...film,addedAt:Date.now()});saveLib();refreshUI();
+  toast(`"${film.Title}" added`,'gold');
+}
+function removeLib(id){
+  const f=library.find(x=>x.imdbID===id);library=library.filter(x=>x.imdbID!==id);
+  saveLib();refreshUI();
+  if(currentView==='library')renderLib();
+  if(currentView==='reviews')renderReviews();
+  if(f)toast(`"${f.Title}" removed`,'');
+}
+function toggleLibModal(){if(!currentFilm)return;inLib(currentFilm.imdbID)?removeLib(currentFilm.imdbID):addLib(currentFilm);updateLibBtn()}
+function quickToggle(id,raw,btn){
+  let f={};try{f=JSON.parse(raw)}catch{} f.imdbID=id;
+  if(inLib(id)){removeLib(id);btn.textContent='+ Save';btn.classList.remove('sv')}
+  else{addLib(f);btn.textContent='✓ Saved';btn.classList.add('sv')}
+}
+function saveLib(){localStorage.setItem('oneflix_lib',JSON.stringify(library))}
+function saveReviews(){localStorage.setItem('oneflix_reviews',JSON.stringify(reviews))}
+function refreshUI(){
+  const c=library.length,b=document.getElementById('navBadge');
+  b.textContent=`${c} film${c!==1?'s':''}`;b.classList.toggle('on',c>0);
+}
+function renderLib(){
+  const g=document.getElementById('libGrid'),e=document.getElementById('libEmpty'),s=document.getElementById('libSub');
+  if(!library.length){e.classList.add('on');g.innerHTML='';s.textContent='Your personal collection';return}
+  e.classList.remove('on');s.textContent=`${library.length} film${library.length!==1?'s':''} in your collection`;
+  g.innerHTML=library.map(f=>cardHTML(f,true)).join('');
+}
+function saveApiKey(){
+  const k=document.getElementById('apiInp').value.trim();
+  if(!k){toast('Enter a key','red');return}
+  localStorage.setItem('oneflix_key',k);document.getElementById('apiBanner').classList.remove('on');
+  toast('Key saved!','');setTimeout(doSearch,300);
+}
+
+/* HERO BANNER */
+async function loadFeatured(){
+  try{
+    const res=await Promise.all(FEATURED.map(id=>fetch(`https://www.omdbapi.com/?i=${id}&apikey=${KEY()}`).then(r=>r.json()).catch(()=>null)));
+    featFilms=res.filter(f=>f&&f.Response==='True');
+  }catch{}
+  if(!featFilms.length)featFilms=[{Title:'The Dark Knight',Year:'2008',Genre:'Action, Crime',imdbRating:'9.0',Plot:'When the menace known as the Joker wreaks havoc on Gotham City, Batman must accept the greatest test of his ability to fight injustice.',imdbID:'tt0468569',Poster:'N/A'}];
+  heroIdx=0;renderHero(0);buildDots();startHeroTimer();
+}
+
+function buildDots(){
+  document.getElementById('hDots').innerHTML=featFilms.map((_,i)=>`<div class="h-dot ${i===0?'on':''}" onclick="goHero(${i})"></div>`).join('');
+}
+function updateDots(){document.querySelectorAll('.h-dot').forEach((d,i)=>d.classList.toggle('on',i===heroIdx))}
+
+function renderHero(idx){
+  const f=featFilms[idx];if(!f)return;
+  // Fade out content
+  ['hEyebrow','hTitle','hMeta','hPlot'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('in');el.style.opacity='0'});
+  document.querySelector('.h-btns').classList.remove('in');document.querySelector('.h-btns').style.opacity='0';
+
+  const bg=document.getElementById('heroBg'),po=document.getElementById('heroPoster');
+  bg.classList.remove('on');po.classList.remove('on');
+  if(f.Poster&&f.Poster!=='N/A'){
+    bg.style.backgroundImage=`url('${f.Poster}')`;po.style.backgroundImage=`url('${f.Poster}')`;
+    setTimeout(()=>{bg.classList.add('on');po.classList.add('on')},100);
+  }else{
+    const grads=['linear-gradient(135deg,#12052a,#0d1b2a)','linear-gradient(135deg,#1a0505,#2d1010)','linear-gradient(135deg,#050a1a,#101b2d)'];
+    bg.style.backgroundImage=grads[idx%grads.length];bg.classList.add('on');
+  }
+  document.getElementById('hEyebrow').textContent=(f.Genre||'Film').split(',')[0].trim();
+  document.getElementById('hTitle').textContent=f.Title||'';
+  const pills=[];
+  if(f.Year)pills.push({t:f.Year,c:''});
+  if(f.imdbRating&&f.imdbRating!=='N/A')pills.push({t:'★ '+f.imdbRating,c:'r'});
+  if(f.Rated&&f.Rated!=='N/A')pills.push({t:f.Rated,c:''});
+  if(f.Runtime&&f.Runtime!=='N/A')pills.push({t:f.Runtime,c:''});
+  document.getElementById('hMeta').innerHTML=pills.map(p=>`<span class="h-pill ${p.c}">${esc(p.t)}</span>`).join('');
+  document.getElementById('hPlot').textContent=(f.Plot&&f.Plot!=='N/A')?f.Plot:'';
+  setTimeout(()=>{
+    ['hEyebrow','hTitle','hMeta','hPlot'].forEach(id=>document.getElementById(id).classList.add('in'));
+    document.querySelector('.h-btns').classList.add('in');
+  },320);
+  updateDots();resetPF();
+}
+
+function goHero(i){heroIdx=i;renderHero(i);resetHeroTimer()}
+function heroStep(d){heroIdx=(heroIdx+d+featFilms.length)%featFilms.length;renderHero(heroIdx);resetHeroTimer()}
+function startHeroTimer(){heroTimer=setInterval(()=>{heroIdx=(heroIdx+1)%featFilms.length;renderHero(heroIdx)},HERO_INT);animPF()}
+function resetHeroTimer(){clearInterval(heroTimer);startHeroTimer()}
+function resetPF(){const f=document.getElementById('heroPF');f.style.transition='none';f.style.width='0%'}
+function animPF(){const f=document.getElementById('heroPF');requestAnimationFrame(()=>{f.style.transition=`width ${HERO_INT}ms linear`;f.style.width='100%'})}
+function heroWatch(){
+  const f=featFilms[heroIdx];if(!f)return;
+  if(!inLib(f.imdbID))addLib(f);
+  setView('stream');setTimeout(()=>{initStream();const s=document.getElementById('sSel');if(s)s.value=f.imdbID;streamBy(f.imdbID,f.Title)},80);
+}
+function heroDetails(){const f=featFilms[heroIdx];if(!f)return;openDetail(f.imdbID,JSON.stringify(f))}
+
+/* STREAM */
+function initStream(){
+  const sel=document.getElementById('sSel'),cur=sel.value;
+  sel.innerHTML='<option value="">— Library —</option>'+library.map(f=>`<option value="${esc(f.imdbID)}">${esc(f.Title||'')} ${f.Year?'('+f.Year+')':''}</option>`).join('');
+  if(cur&&library.some(f=>f.imdbID===cur))sel.value=cur;
+}
+function loadStream(){
+  const sel=document.getElementById('sSel'),id=sel.value;
+  if(!id){toast('Pick a film','red');return}
+  streamBy(id,sel.options[sel.selectedIndex]?.text||'Film');
+}
+function streamBy(id,title){
+  document.getElementById('sTitle').textContent=title;
+  document.getElementById('sEmpty').style.display='none';
+  const w=document.getElementById('sWrap'),iframe=document.getElementById('sIframe'),sp=document.getElementById('sSpin');
+  w.classList.add('on');sp.classList.add('on');
+  iframe.src='about:blank';
+  setTimeout(()=>{iframe.src=`https://www.playimdb.com/title/${id}/`},80);
+  iframe.onload=()=>sp.classList.remove('on');
+  toast(`▶ ${title}`,'');
+}
+function toggleFS(){
+  const sh=document.querySelector('.s-shell'),ic=document.getElementById('fsIcon');
+  if(!document.fullscreenElement){
+    sh.requestFullscreen().catch(()=>{});
+    ic.innerHTML='<polyline points="4,14 10,14 10,20"/><polyline points="20,10 14,10 14,4"/><line x1="10" y1="20" x2="17" y2="13"/><line x1="4" y1="14" x2="11" y2="7"/>';
+  }else{
+    document.exitFullscreen();
+    ic.innerHTML='<polyline points="15,3 21,3 21,9"/><polyline points="9,21 3,21 3,15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>';
+  }
+}
+window.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.getElementById('fsIcon').innerHTML='<polyline points="15,3 21,3 21,9"/><polyline points="9,21 3,21 3,15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>'});
+window.addEventListener('message',e=>{try{const d=typeof e.data==='string'?JSON.parse(e.data):e.data;if(d&&(d.type==='redirect'||d.url||d.href)){const t=document.getElementById('sRtoa');if(t){t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)}}}catch{}});
+window.addEventListener('beforeunload',e=>{if(currentView==='stream'){e.preventDefault();e.returnValue=''}});
+
+/* REVIEWS */
+const _st={};
+function setSortMode(m){
+  sortMode=m;document.querySelectorAll('.rv-sort-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sort-'+m)?.classList.add('on');renderReviews();
+}
+function stHTML(r,sz=18){let h='';for(let i=1;i<=5;i++)h+=`<span class="star-d ${r>=i?'on':''}" style="font-size:${sz}px">★</span>`;return h}
+function getSorted(){
+  const a=[...library];
+  if(sortMode==='rating')return a.sort((x,y)=>{const rx=reviews[x.imdbID]?.rating||0,ry=reviews[y.imdbID]?.rating||0;return ry!==rx?ry-rx:(y.addedAt||0)-(x.addedAt||0)});
+  if(sortMode==='alpha')return a.sort((x,y)=>(x.Title||'').localeCompare(y.Title||''));
+  return a.sort((x,y)=>(y.addedAt||0)-(x.addedAt||0));
+}
+function renderReviews(){
+  const list=document.getElementById('rvList'),em=document.getElementById('rvEmpty'),st=document.getElementById('rvStats'),so=document.getElementById('rvSort'),sb=document.getElementById('rvSub');
+  if(!library.length){em.classList.add('on');list.innerHTML='';st.classList.remove('on');so.classList.remove('on');sb.textContent='Rate and rank your collection';return}
+  em.classList.remove('on');st.classList.add('on');so.classList.add('on');
+  const rev=library.filter(f=>reviews[f.imdbID]?.rating);
+  const avg=rev.length?(rev.reduce((s,f)=>s+reviews[f.imdbID].rating,0)/rev.length).toFixed(1):null;
+  document.getElementById('stFilms').textContent=library.length;document.getElementById('stRev').textContent=rev.length;
+  if(avg){document.getElementById('stAvg').textContent=avg;document.getElementById('stAvgS').innerHTML=stHTML(Math.round(avg),16)}
+  else{document.getElementById('stAvg').textContent='—';document.getElementById('stAvgS').innerHTML=''}
+  sb.textContent=`${library.length} film${library.length!==1?'s':''} · ${rev.length} reviewed`;
+  list.innerHTML=getSorted().map((f,i)=>{
+    const rv=reviews[f.imdbID]||{};
+    const hp=f.Poster&&f.Poster!=='N/A';
+    const ph=hp?`<img src="${esc(f.Poster)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="rv-post-ph">${esc((f.Title||'?')[0])}</div>`;
+    const ds=rv.reviewedAt?new Date(rv.reviewedAt).toLocaleDateString('en-US',{month:'short',year:'numeric'}):(f.addedAt?'Added '+new Date(f.addedAt).toLocaleDateString('en-US',{month:'short',year:'numeric'}):'');
+    return `<div class="rv-card" id="rc-${f.imdbID}">
+      <div class="rv-rank ${i===0&&rv.rating?'top':''}">${i+1}</div>
+      <div class="rv-pw"><div class="rv-post">${ph}</div></div>
+      <div class="rv-inf">
+        <div class="rv-ft">${esc(f.Title||'')}</div>
+        <div class="rv-fm">${esc(f.Year||'')}${f.Genre&&f.Genre!=='N/A'?' · '+f.Genre.split(',')[0]:''}</div>
+        <div class="rv-stars">${rv.rating?stHTML(rv.rating):'<span style="font-size:13px;color:var(--white3);font-style:italic">Not rated yet</span>'}</div>
+        <div class="rv-text ${!rv.text?'nr':''}">${rv.text?esc(rv.text):'No review written yet.'}</div>
+        ${ds?`<div class="rv-date">${esc(ds)}</div>`:''}
+        <div class="rv-acts">
+          <button class="rv-btn rv-write" onclick="toggleForm('${f.imdbID}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>${rv.rating?'Edit Review':'Write Review'}</button>
+          <button class="rv-btn rv-watch" onclick="watchById('${f.imdbID}','${esc(f.Title||'')}')"><svg width="10" height="10" viewBox="0 0 10 11" fill="currentColor"><polygon points="0,0 10,5.5 0,11"/></svg>Watch</button>
+          <button class="rv-btn rv-rem" onclick="removeLib('${f.imdbID}')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/></svg>Remove</button>
+        </div>
+        <div class="rv-form" id="rf-${f.imdbID}">
+          <span class="rv-flbl">Your rating</span>
+          <div class="si-row" id="si-${f.imdbID}">${[1,2,3,4,5].map(n=>`<span class="si ${rv.rating>=n?'sel':''}" data-v="${n}" onmouseenter="hovS('${f.imdbID}',${n})" onmouseleave="uhovS('${f.imdbID}')" onclick="selS('${f.imdbID}',${n})">★</span>`).join('')}</div>
+          <span class="rv-flbl" style="margin-top:4px">Your review</span>
+          <textarea class="rv-ta" id="rt-${f.imdbID}" placeholder="What did you think?">${esc(rv.text||'')}</textarea>
+          <div class="rv-fa"><button class="rv-save" onclick="saveRv('${f.imdbID}')">Save Review</button><button class="rv-cancel" onclick="toggleForm('${f.imdbID}')">Cancel</button></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleForm(id){
+  const f=document.getElementById('rf-'+id);if(!f)return;
+  const open=f.classList.contains('on');
+  document.querySelectorAll('.rv-form.on').forEach(x=>x.classList.remove('on'));
+  if(!open){f.classList.add('on');_st[id]=reviews[id]?.rating||0;updSI(id,_st[id]);f.scrollIntoView({behavior:'smooth',block:'nearest'})}
+}
+function hovS(id,v){updSI(id,v,true)}
+function uhovS(id){updSI(id,_st[id]||0)}
+function selS(id,v){_st[id]=v;updSI(id,v)}
+function updSI(id,v,hov=false){
+  const w=document.getElementById('si-'+id);if(!w)return;
+  w.querySelectorAll('.si').forEach(s=>{const n=parseInt(s.dataset.v);s.classList.toggle('hov',hov&&n<=v);s.classList.toggle('sel',!hov&&n<=v)});
+}
+function saveRv(id){
+  const r=_st[id]||0,t=(document.getElementById('rt-'+id)?.value||'').trim();
+  if(!r){toast('Select a rating first','red');return}
+  reviews[id]={rating:r,text:t,reviewedAt:Date.now()};saveReviews();toast('Review saved ✓','gold');renderReviews();
+}
+function watchById(id,title){setView('stream');setTimeout(()=>{initStream();const s=document.getElementById('sSel');if(s)s.value=id;streamBy(id,title)},80)}
+
+/* HELPERS */
+function toast(msg,type=''){
+  const c=document.getElementById('toast-cont'),el=document.createElement('div');
+  el.className=`toast ${type}`;el.textContent=msg;c.appendChild(el);
+  setTimeout(()=>{el.style.animation='tOut 0.3s ease forwards';setTimeout(()=>el.remove(),300)},2800);
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function cap(s){return s?s[0].toUpperCase()+s.slice(1):''}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.getElementById('modal').classList.contains('on'))closeModal();
+  if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){e.preventDefault();setView('search');document.getElementById('searchInput').focus()}
+  if((e.key==='f'||e.key==='F')&&currentView==='stream')toggleFS();
+  if(e.key==='ArrowRight'&&currentView==='search'&&!document.getElementById('modal').classList.contains('on'))heroStep(1);
+  if(e.key==='ArrowLeft'&&currentView==='search'&&!document.getElementById('modal').classList.contains('on'))heroStep(-1);
+});
+
+/* ═══ CINEMA MODE — auto-hide cursor + controls ═══ */
+(()=>{
+  const IDLE_MS = 3000;
+  let t = null;
+  let lastX = -1, lastY = -1;
+
+  const sv = () => document.getElementById('streamView');
+  const ov = () => document.getElementById('sCursorOverlay');
+
+  function wake(e){
+    // Only react to REAL mouse movement — ignore synthetic events
+    // fired when the overlay appears/disappears under a stationary cursor
+    if(e && e.type === 'mousemove'){
+      if(e.clientX === lastX && e.clientY === lastY) return;
+      lastX = e.clientX; lastY = e.clientY;
+    }
+    clearTimeout(t);
+    const el = sv(); if(el) el.classList.remove('cinema');
+    const o  = ov(); if(o){ o.style.display='none'; o.style.pointerEvents='none'; }
+    t = setTimeout(sleep, IDLE_MS);
+  }
+
+  function sleep(){
+    if(currentView !== 'stream') return;
+    const el = sv(); if(el) el.classList.add('cinema');
+    const o  = ov(); if(o){ o.style.display='block'; o.style.pointerEvents='all'; }
+  }
+
+  ['mousemove','mousedown','keydown','touchstart'].forEach(ev =>
+    document.addEventListener(ev, wake, {passive:true})
+  );
+
+  const o = ov();
+  if(o) ['mousemove','mousedown','touchstart'].forEach(ev =>
+    o.addEventListener(ev, wake, {passive:true})
+  );
+})();
+
+/* INIT */
+refreshUI();
+loadFeatured();
+</script>
+</body>
+</html>
